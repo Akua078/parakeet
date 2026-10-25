@@ -47,6 +47,10 @@ public class Parakeet {
 
     }
 
+    public static boolean messageIdExists(Session s, String id){
+        return(!getMessage(s, id).substring(0,13).equals("[NO ID ERROR]"));
+    }
+
     public static String getMessage(Session session, String id){
 
         //Begin Request
@@ -84,9 +88,14 @@ public class Parakeet {
         //Test fetching items
         System.out.println(getMessage(s, "00000001"));
         System.out.println(getMessage(s, "00000002"));
+        System.out.println(getMessage(s, "00000003"));
 
         //Test sending items
-        sendMessage(s, "00000003", "This is a third message I sent from my application!"); 
+        //sendMessage(s, "00000003", "This is a third message I sent from my application!"); 
+
+        //Test to see if message IDs exist
+        System.out.println("True:  " + messageIdExists(s, "00000002"));
+        System.out.println("False: " + messageIdExists(s, "00000007"));
 
         //Close session and end program
         s.close();
