@@ -1,0 +1,14 @@
+# Maven build output
+target/
+
+# Compiled Java files
+*.class
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+
+# IDE settings
+.vscode/
+.idea/
