@@ -15,6 +15,7 @@ public class Parakeet {
     public static class Session {
 
         //Attributes
+        private static Session instance;
         private final String auth;
         private final String messagesTableName;
         private final String accountsTableName;
@@ -27,10 +28,12 @@ public class Parakeet {
         public DynamoDbClient getClient(){return client;}
 
         //Close Session
-        public void close(){client.close();}
+        public void close(){
+            client.close();
+        }
 
         //Constructors
-        public Session(String auth, Region region){
+        private Session(String auth, Region region){
 
             //Setup String identifiers
             this.auth = auth;
@@ -43,6 +46,13 @@ public class Parakeet {
                 .region(region)
                 .credentialsProvider(ProfileCredentialsProvider.create(auth))
                 .build();
+        }
+
+        public static Session getSession(){
+            if(instance==null){
+                instance = new Session("parakeet-dev", Region.US_WEST_2);
+            }
+            return instance;
         }
 
     }
@@ -83,7 +93,7 @@ public class Parakeet {
     public static void main(String[] args) {
 
         //Establish Session with AWS
-        Session s = new Session("parakeet-dev", Region.US_WEST_2);
+        Session s = Session.getSession();
 
         //Test fetching items
         System.out.println(getMessage(s, "00000001"));
