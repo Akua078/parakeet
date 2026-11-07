@@ -1,114 +1,104 @@
-//For Maven
 package com.parakeet;
-
-//AWS Imports
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 public class Parakeet {
 
-    //Session object class to keep one connection open, instead of using a new connection to AWS for every function call
+    //Classes - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    //Session object class to keep one connection open, instead of using a new connection for every function call
     public static class Session {
 
         //Attributes
-        private static Session instance;
+        private static Session instance;        //instance variable to enforce singleton design pattern
         private final String auth;
         private final String messagesTableName;
         private final String accountsTableName;
-        private final DynamoDbClient client;
 
         //Accessors
         public String getAuth(){return auth;}
         public String getMessagesTableName(){return messagesTableName;}
         public String getAccountsTableName(){return accountsTableName;}
-        public DynamoDbClient getClient(){return client;}
 
-        //Close Session
-        public void close(){
-            client.close();
-        }
-
-        //Constructors
-        private Session(String auth, Region region){
+        //Constructor
+        private Session(String auth){
 
             //Setup String identifiers
             this.auth = auth;
             this.messagesTableName = "parakeetMessages";
             this.accountsTableName = "";
-            
-            //Setup region and client
-            // Connect to DynamoDB in Oregon (us-west-2)
-            this.client = DynamoDbClient.builder()
-                .region(region)
-                .credentialsProvider(ProfileCredentialsProvider.create(auth))
-                .build();
+
         }
 
         public static Session getSession(){
+
+            //Creating a new instance if none exists
             if(instance==null){
-                instance = new Session("parakeet-dev", Region.US_WEST_2);
+                instance = new Session("parakeet-admin");
             }
+
+            //Returning instance that may or may not have already existed
             return instance;
         }
 
     }
 
+    //Utility Methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    //Converts two given decimal values into their internal Message ID strings for quality of life
+    //Message IDs are stored in hexadecimal strings, with the first eight characters representing the user ID, and the second four representing the message number (internal to that user)
+    //In this way, every major message ID is unique, but each user can have a message number '0020' for their 20th message, for example
+    public static String mID(int userID, int messageNumber){
+
+        //Convert to hex string
+        String userIDString = String.format("%08X", userID);
+        String messageNumberString = String.format("%08X", userID);
+
+        //Add a space every four characters
+        for(int i=1; i<8; i++){
+            if(i%4==0){
+                userIDString = userIDString.substring(0,i) + " " + userIDString.substring(i);
+                messageNumberString = messageNumberString.substring(0,i) + " " + messageNumberString.substring(i);
+            }
+        }
+
+        //Return the two strings appended
+        return userIDString.trim() + " " + messageNumberString.trim();
+    }
+
+
+    //Main Methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    //Check the table to see if a message with the given ID exists
     public static boolean messageIdExists(Session s, String id){
         return(!getMessage(s, id).substring(0,13).equals("[NO ID ERROR]"));
     }
 
+    //Fetch and return the message with the given ID
     public static String getMessage(Session session, String id){
-
-        //Begin Request
-        GetItemRequest request = GetItemRequest.builder()                               //Get Item
-        .tableName(session.getMessagesTableName())                                      //From table
-        .key(java.util.Map.of("id", AttributeValue.builder().s(id).build())).build();   //With given ID
-
-        // Retrieve the item from AWS
-        var response = session.getClient().getItem(request);
-
-        // Display its message if it has one, alternate message otherwise
-        if (response.hasItem()) {
-            return response.item().get("message").s();
-        } else {
-            return "[NO ID ERROR] - No message found with id: [" + id + "]";
-        }
-
+        return "TODO: Implement Message Fetching";
     }
 
+    //Add a message to the database
     public static void sendMessage(Session session, String id, String message){
 
-        session.getClient()                                         //Connect to DynamoDB
-            .putItem(PutItemRequest.builder()                       //Send the Message
-            .tableName(session.getMessagesTableName())              //Into the messages table
-            .item(java.util.Map.of("id", AttributeValue.builder()   //At this ID
-            .s(id).build(),"message", AttributeValue.builder()      //With this message
-            .s(message).build())).build());                         //(send)
     }
 
     public static void main(String[] args) {
 
-        //Establish Session with AWS
+        /* //Establish Session
         Session s = Session.getSession();
 
         //Test fetching items
-        System.out.println(getMessage(s, "00000001"));
-        System.out.println(getMessage(s, "00000002"));
-        System.out.println(getMessage(s, "00000003"));
+        System.out.println(getMessage(s, "0000 0000 0000 0000"));
+        System.out.println(getMessage(s, "0000 0000 0000 0000"));
+        System.out.println(getMessage(s, "0000 0000 0000 0000"));
 
         //Test sending items
-        //sendMessage(s, "00000003", "This is a third message I sent from my application!"); 
+        sendMessage(s, "0000 0000 0000 0000", "Moving to Mongo DB!"); 
 
         //Test to see if message IDs exist
-        System.out.println("True:  " + messageIdExists(s, "00000002"));
-        System.out.println("False: " + messageIdExists(s, "00000007"));
+        System.out.println("True:  " + messageIdExists(s, "0000 0001 0000 0001"));
+        System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001")); */
 
-        //Close session and end program
-        s.close();
         
     }
 }
