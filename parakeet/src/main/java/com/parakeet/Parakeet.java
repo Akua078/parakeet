@@ -1,4 +1,13 @@
+//For Maven
 package com.parakeet;
+
+//Imports
+import static com.mongodb.client.model.Filters.eq;
+import org.bson.Document;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class Parakeet {
 
@@ -98,6 +107,24 @@ public class Parakeet {
         //Test to see if message IDs exist
         System.out.println("True:  " + messageIdExists(s, "0000 0001 0000 0001"));
         System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001")); */
+
+        System.out.println(mID(4,4));
+
+        String uri = "mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net";
+        MongoClient mongoClient = MongoClients.create(uri);
+        MongoDatabase db = mongoClient.getDatabase("parakeetMessages");
+
+        /* try (MongoClient mongoClient = MongoClients.create(uri)) {
+            MongoDatabase database = mongoClient.getDatabase("sample_mflix");
+            MongoCollection<Document> collection = database.getCollection("movies");
+
+            Document doc = collection.find(eq("title", "Back to the Future")).first();
+            if (doc != null) {
+                System.out.println(doc.toJson());
+            } else {
+                System.out.println("No matching documents found.");
+            }
+        } */
 
         
     }
