@@ -82,7 +82,7 @@ public class Parakeet {
     }
 
 
-    //Main Methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //Message Facilitation Methods - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     //Check the table to see if a message with the given ID exists
     public static boolean messageIdExists(Session s, String id){
@@ -104,8 +104,9 @@ public class Parakeet {
     }
 
     //Add a message to the database
-    public static void sendMessage(Session session, String id, String message){
-
+    public static void sendMessage(Session s, String id, String msg){
+        Document message = new Document("mID",id).append("msg",msg);
+        s.getMessageDB().insertOne(message);
     }
 
     public static void main(String[] args) {
@@ -116,27 +117,14 @@ public class Parakeet {
         //Test fetching items
         System.out.println(getMessage(s, "0000 0000 0000 0000"));
         System.out.println(getMessage(s, "0000 0000 0000 0001"));
-        System.out.println(getMessage(s, "0000 0000 0000 0007"));
+        System.out.println(getMessage(s, "0000 0000 0000 0003"));
 
         //Test sending items
-        //sendMessage(s, "0000 0000 0000 0000", "Moving to Mongo DB!"); 
+        sendMessage(s, "0000 0000 0000 0003", "Sending another message!"); 
 
         //Test to see if message IDs exist
         System.out.println("True:  " + messageIdExists(s, "0000 0000 0000 0001"));
         System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001"));
-
-/*         String uri = "mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net";
-        MongoClient mongoClient = MongoClients.create(uri);
-        MongoDatabase db = mongoClient.getDatabase("parakeetMessages");
-        MongoCollection<Document> collection = db.getCollection("parakeetMessages");
-        Document doc = collection.find(eq("mID", mID(0,9))).first();
-        if (doc != null) {
-                System.out.println(doc.toString());
-            } else {
-                System.out.println("No matching documents found.");
-            }
-
-        System.out.println(mID(3,222)); */
 
         
     }
