@@ -19,21 +19,29 @@ public class Parakeet {
         //Attributes
         private static Session instance;        //instance variable to enforce singleton design pattern
         private final String auth;
-        private final String messagesTableName;
-        private final String accountsTableName;
+        private final MongoClient client;
+        private final MongoDatabase database;
+        private final MongoCollection<Document> messageDB;
+        private final MongoCollection<Document> usersDB;
 
         //Accessors
         public String getAuth(){return auth;}
-        public String getMessagesTableName(){return messagesTableName;}
-        public String getAccountsTableName(){return accountsTableName;}
+        public MongoClient getClient(){return client;}
+        public MongoDatabase getDB(){return database;}
+        public MongoCollection<Document> getMessageDB(){return messageDB;}
+        public MongoCollection<Document> getUsersDB(){return usersDB;}
 
         //Constructor
         private Session(String auth){
 
             //Setup String identifiers
             this.auth = auth;
-            this.messagesTableName = "parakeetMessages";
-            this.accountsTableName = "";
+
+            //Mongo setup
+            this.client = MongoClients.create("mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net");
+            this.database = this.client.getDatabase("parakeetMessages");
+            this.messageDB = this.database.getCollection("parakeetMessages");
+            this.usersDB = this.database.getCollection("parakeetUsers");
 
         }
 
@@ -59,7 +67,7 @@ public class Parakeet {
 
         //Convert to hex string
         String userIDString = String.format("%08X", userID);
-        String messageNumberString = String.format("%08X", userID);
+        String messageNumberString = String.format("%08X", messageNumber);
 
         //Add a space every four characters
         for(int i=1; i<8; i++){
@@ -78,12 +86,21 @@ public class Parakeet {
 
     //Check the table to see if a message with the given ID exists
     public static boolean messageIdExists(Session s, String id){
-        return(!getMessage(s, id).substring(0,13).equals("[NO ID ERROR]"));
+        Document doc = s.getMessageDB().find(eq("mID", id)).first();
+        return doc!=null;
     }
 
     //Fetch and return the message with the given ID
-    public static String getMessage(Session session, String id){
-        return "TODO: Implement Message Fetching";
+    public static String getMessage(Session s, String id){
+        String outString = "No Message Found for ID: " + id;
+
+        Document doc = s.getMessageDB().find(eq("mID", id)).first();
+
+        if(doc!=null){
+            outString = doc.toString().substring(69,doc.toString().length()-2);
+        }
+
+        return outString;
     }
 
     //Add a message to the database
@@ -93,33 +110,33 @@ public class Parakeet {
 
     public static void main(String[] args) {
 
-        /* //Establish Session
+        //Establish Session
         Session s = Session.getSession();
 
         //Test fetching items
         System.out.println(getMessage(s, "0000 0000 0000 0000"));
-        System.out.println(getMessage(s, "0000 0000 0000 0000"));
-        System.out.println(getMessage(s, "0000 0000 0000 0000"));
+        System.out.println(getMessage(s, "0000 0000 0000 0001"));
+        System.out.println(getMessage(s, "0000 0000 0000 0007"));
 
         //Test sending items
-        sendMessage(s, "0000 0000 0000 0000", "Moving to Mongo DB!"); 
+        //sendMessage(s, "0000 0000 0000 0000", "Moving to Mongo DB!"); 
 
         //Test to see if message IDs exist
-        System.out.println("True:  " + messageIdExists(s, "0000 0001 0000 0001"));
-        System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001")); */
+        System.out.println("True:  " + messageIdExists(s, "0000 0000 0000 0001"));
+        System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001"));
 
-        String uri = "mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net";
+/*         String uri = "mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net";
         MongoClient mongoClient = MongoClients.create(uri);
         MongoDatabase db = mongoClient.getDatabase("parakeetMessages");
         MongoCollection<Document> collection = db.getCollection("parakeetMessages");
-        Document doc = collection.find(eq("mID", mID(0,1))).first();
+        Document doc = collection.find(eq("mID", mID(0,9))).first();
         if (doc != null) {
                 System.out.println(doc.toString());
             } else {
                 System.out.println("No matching documents found.");
             }
 
-        System.out.println(mID(4,4));
+        System.out.println(mID(3,222)); */
 
         
     }
