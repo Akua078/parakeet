@@ -108,23 +108,18 @@ public class Parakeet {
         System.out.println("True:  " + messageIdExists(s, "0000 0001 0000 0001"));
         System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001")); */
 
-        System.out.println(mID(4,4));
-
         String uri = "mongodb+srv://akua078:rainier0529!@mydeployment.foxjxtk.mongodb.net";
         MongoClient mongoClient = MongoClients.create(uri);
         MongoDatabase db = mongoClient.getDatabase("parakeetMessages");
-
-        /* try (MongoClient mongoClient = MongoClients.create(uri)) {
-            MongoDatabase database = mongoClient.getDatabase("sample_mflix");
-            MongoCollection<Document> collection = database.getCollection("movies");
-
-            Document doc = collection.find(eq("title", "Back to the Future")).first();
-            if (doc != null) {
-                System.out.println(doc.toJson());
+        MongoCollection<Document> collection = db.getCollection("parakeetMessages");
+        Document doc = collection.find(eq("mID", mID(0,1))).first();
+        if (doc != null) {
+                System.out.println(doc.toString());
             } else {
                 System.out.println("No matching documents found.");
             }
-        } */
+
+        System.out.println(mID(4,4));
 
         
     }

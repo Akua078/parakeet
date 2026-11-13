@@ -16,6 +16,52 @@
         <aws.java.sdk.version>2.57.2</aws.java.sdk.version>
     </properties>
 
+    <build>
+        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+        <plugins>
+            <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+            <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>3.4.0</version>
+            </plugin>
+            <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+            <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.3.1</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.3.0</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.4.2</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>3.1.2</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.1.2</version>
+            </plugin>
+            <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+            <plugin>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.12.1</version>
+            </plugin>
+            <plugin>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>3.6.1</version>
+            </plugin>
+        </plugins>
+        </pluginManagement>
+    </build>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -25,51 +71,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-sync</artifactId>
-                <version>3.2.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-core</artifactId>
-            </dependency>
-                <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-mongodb</artifactId>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-bom</artifactId>
-            <version>5.5.1</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver</artifactId>
-            <version>3.12.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-core</artifactId>
-            <version>4.2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.11</version>
+            <artifactId>mongodb-driver-sync</artifactId>
         </dependency>
     </dependencies>
+
 
 
 </project>
