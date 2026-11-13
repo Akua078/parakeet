@@ -17,12 +17,12 @@ public class Parakeet {
     public static class Session {
 
         //Attributes
-        private static Session instance;        //instance variable to enforce singleton design pattern
-        private final String auth;
-        private final MongoClient client;
-        private final MongoDatabase database;
-        private final MongoCollection<Document> messageDB;
-        private final MongoCollection<Document> usersDB;
+        private static Session instance;                    //instance variable to enforce singleton design pattern
+        private final String auth;                          //this session's authorization level (dependant on user)
+        private final MongoClient client;                   //Mongo Client
+        private final MongoDatabase database;               //Mongo Parakeet Database
+        private final MongoCollection<Document> messageDB;  //Message Database
+        private final MongoCollection<Document> usersDB;    //User Database
 
         //Accessors
         public String getAuth(){return auth;}
@@ -104,9 +104,22 @@ public class Parakeet {
     }
 
     //Add a message to the database
-    public static void sendMessage(Session s, String id, String msg){
+    public static void sendMessage(Session s, int uID, String msg){
+        String id = mID(uID, getUserMsgCount(s,uID)+1);
         Document message = new Document("mID",id).append("msg",msg);
-        s.getMessageDB().insertOne(message);
+        if(!messageIdExists(s,id)){s.getMessageDB().insertOne(message);}
+        else{System.out.println("Message ID: [" + id + "] Already Exists!");}
+    }
+
+    //Manually Check the number of messages a user has sent, given that user's id
+    public static int getUserMsgCount(Session s, int uID){
+        int count = 0;
+        while(true){
+            System.out.println("TESTING: " + mID(Integer.valueOf(uID),count+1));
+            if(!messageIdExists(s, mID(Integer.valueOf(uID),count+1))){break;}
+            count++;
+        }
+        return count;
     }
 
     public static void main(String[] args) {
@@ -115,16 +128,24 @@ public class Parakeet {
         Session s = Session.getSession();
 
         //Test fetching items
-        System.out.println(getMessage(s, "0000 0000 0000 0000"));
-        System.out.println(getMessage(s, "0000 0000 0000 0001"));
-        System.out.println(getMessage(s, "0000 0000 0000 0003"));
+        //System.out.println(getMessage(s, "0000 0000 0000 0000"));
+        //System.out.println(getMessage(s, "0000 0000 0000 0001"));
+        //System.out.println(getMessage(s, "0000 0000 0000 0003"));
 
         //Test sending items
-        sendMessage(s, "0000 0000 0000 0003", "Sending another message!"); 
+        //sendMessage(s, 78, "Akua078 sent this message"); 
 
         //Test to see if message IDs exist
-        System.out.println("True:  " + messageIdExists(s, "0000 0000 0000 0001"));
-        System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001"));
+        //System.out.println("True:  " + messageIdExists(s, "0000 0000 0000 0001"));
+        //System.out.println("False: " + messageIdExists(s, "F000 0000 0000 0001"));
+
+        //Testing User Message Count
+        int testUID = 0;
+        //sendMessage(s, testUID, "User " + testUID + " Speaking"); 
+        //System.out.println("User: [" + String.format("%08X", testUID) + "] ; " + getUserMsgCount(s, testUID));
+
+        //sendMessage(s, testUID, "User " + testUID + " Speaking Again"); 
+        System.out.println("User: [" + String.format("%08X", testUID) + "] ; " + getUserMsgCount(s, testUID));
 
         
     }
