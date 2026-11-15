@@ -7,7 +7,7 @@ import com.mongodb.client.model.Sorts;
 
 public class ParakeetUI extends JFrame {
 
-    private final Parakeet.Session session;
+    private final ParakeetBackend.Session session;
     private final int userID = 78;
     private final JPanel messagePanel;
     private final JScrollPane scrollPane;
@@ -18,7 +18,7 @@ public class ParakeetUI extends JFrame {
 
     public ParakeetUI() {
 
-        session = Parakeet.Session.getSession();
+        session = ParakeetBackend.Session.getSession();
 
         setTitle("Parakeet");
         setSize(500,500);
