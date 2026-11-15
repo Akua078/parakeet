@@ -110,14 +110,35 @@ public class ParakeetBackend {
             return outString;
         }
 
+        //Returns the mID of the latest message sent by a given user
+        //(finds the greatest mID for a given user)
+        public int getMaxMID(int uID){
+            int max = 0;
+            if(this.userExists(uID)){
+                for(int i = (int)this.getMessagesDB().countDocuments(); i>0; i--){
+                    if(this.messageIdExists(uID, i)){
+                        String mStr = findMessage(uID, i).toString();
+                        int foundUID = Integer.valueOf(mStr.substring(mStr.indexOf("mID=")+4,mStr.indexOf(", msg")));
+                        //System.out.println(mStr.substring(mStr.indexOf("mID=")+4,mStr.indexOf(", msg")));
+                        max = (foundUID < max) ? max : foundUID;
+                    }
+                }
+            }
+            else{return -1;};
+            return max;
+        }
+
         //Add a message to the database
         public boolean sendMessage(int uID, String msg){
             //If a user with the given uID exists
             if(this.userExists(uID)){
+
+                int newMsgID = getMaxMID(uID)+1;
+
                 //Set up a message object with the given uID and message
-                //Determine the user's message count, then add one to get a new mID
-                Document message = new Document("mID",getUserMsgCount(uID)+1).append("msg",msg).append("uID",uID);
-                //Insert the message to the messages DB
+                Document message = new Document("mID",newMsgID).append("msg",msg).append("uID",uID);
+
+                //Insert the message to the messages DB and indicate success 
                 this.getMessagesDB().insertOne(message);
                 return true;
             }
@@ -191,6 +212,7 @@ public class ParakeetBackend {
 
         //Establish Session
         Session s = Session.getSession();
+        System.out.println("\nMAIN - - - - - - - - - - - - - - - - - - - - - -\n");
 
         //Testing getMessage()
         //System.out.println(s.getMessage(78, 1));
@@ -199,8 +221,8 @@ public class ParakeetBackend {
 
         //Testing sendMessage()
         //s.sendMessage(78, "Akua078 sent a second message"); 
-        //s.sendMessage(78, "This message is about to be deleted"); 
-        //s.sendMessage(13, "No one sent this message"); 
+        s.sendMessage(78, "This message does not have a duplicate ID"); 
+        //s.sendMessage(78, "This message has a duplicate id! What idiot programmed this?"); 
 
         //Testing userExists()
         //System.out.println(s.userExists(78));
@@ -208,7 +230,18 @@ public class ParakeetBackend {
         //System.out.println(s.userExists(52));
 
         //Testing message deletion
-        s.deleteMessage(78, 7);
+        //s.deleteMessage(78, 7);
+
+        //Testing finding a document with the max mID
+        System.out.println("User 78: " + s.getMaxMID(78));
+        System.out.println("User 5: " + s.getMaxMID(5));
+        System.out.println("User 69: " + s.getMaxMID(69));
+
+
+
+
+
+        System.out.println("\nEND  - - - - - - - - - - - - - - - - - - - - - -\n");
 
 
         
