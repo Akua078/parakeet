@@ -62,10 +62,7 @@ public class Parakeet {
 
         //Check the collection to see if a message with the given ID exists
         public boolean messageIdExists(int uID, int mID){
-            BasicDBObject criteria = new BasicDBObject();
-            criteria.append("mID",mID);
-            criteria.append("uID",uID);
-            Document doc = this.getMessagesDB().find(criteria).first();
+            Document doc = findMessage(uID, mID);
             return doc!=null;
         }
 
@@ -75,21 +72,27 @@ public class Parakeet {
             return doc!=null;
         }
 
+        //Find a message and return it, if it exists. Returns null otherwise
+        public Document findMessage(int uID, int mID){
+
+            //Setup an object to serve as our search criteria (In this case, uID and mID)
+            BasicDBObject ids = new BasicDBObject();
+            ids.append("mID",mID);
+            ids.append("uID",uID);
+
+            //Return the result (null if none is found)
+            return this.getMessagesDB().find(ids).first();
+        }
+
         //Fetch a message from the messages database with the given uID and mIDs. 
         public String getMessage(int uID, int mID){
-
-            //Setup criteria object and append both uID and mID
-            // so our message must match both
-            BasicDBObject criteria = new BasicDBObject();
-            criteria.append("mID",mID);
-            criteria.append("uID",uID);
             
             //Setup default output (if no message is found for the criteria, this is returned)
             String outString = "No Message Found for ID:[uID,mID]: " + uID + " " + mID;
 
             //Fetch the message from the database, if it exists. 
             //If the message does not exist, doc will be null
-            Document doc = this.getMessagesDB().find(criteria).first();
+            Document doc = findMessage(uID, mID);
 
             //If we found the message, extract the 'msg' component and assign outString to that
             if(doc!=null){
@@ -115,6 +118,16 @@ public class Parakeet {
             return false;
         }
 
+        //Delete a message with a given mID and uID
+        //NOTE: using this function does not alter the mIDs of the other messages sent by the given user, 
+        //  and this is intentional, as it would corrupt the data of chatrooms.
+        //mIDs are used for reference only and not for counting messages, thats what getUserMsgCount() is for. 
+        public boolean deleteMessage(int uID, int mID){
+            Document doc = findMessage(uID, mID);
+            
+            return false;
+        }
+
         //Manually Check the number of messages a user has sent, given that user's id
         public int getUserMsgCount(int uID){
             return (int) this.getMessagesDB().countDocuments(eq("uID",uID));
@@ -125,9 +138,9 @@ public class Parakeet {
     //Chatroom class to facilitate processing teir logic
     public class Chatroom{
 
-        int roomID;
-        int[] userList;
-        int[][] messageList;
+        int roomID;             //key
+        int[] userList;         //Stores recipients of these messages
+        int[][] messageList;    //Stores the mIDs of the messages and the uIDs of the senders [mID, uID]
 
         private Chatroom(){
 
