@@ -7,7 +7,6 @@ public class Parakeet {
         SwingUtilities.invokeLater(() -> {
             ParakeetUI window = new ParakeetUI();
             window.setVisible(true);
-            // Start and display your window here
         });
     }
 }
