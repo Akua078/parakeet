@@ -1,5 +1,4 @@
 package com.parakeet;
-
 import java.awt.*;
 import javax.swing.*;
 import org.bson.Document;
@@ -85,99 +84,118 @@ public class ParakeetUI extends JFrame {
         //pressing enter clicks send button
         input.addActionListener(event -> sendButton.doClick());
 
-        
+        // puts cursor back into input box
         SwingUtilities.invokeLater(() -> {
             input.requestFocusInWindow();
         });
     }
 
+    // loads past messages from mongodb
     private void loadMessagesFromDatabase() {
+        // gets rid of messages that have already been displayed
         messagePanel.removeAll();
         nextMessageY = 10;
 
+        // fetches messages starting from oldest from database
         for (Document document : session.getMessagesDB()
             .find()
             .sort(Sorts.ascending("_id"))) {
                 int senderID = document.getInteger("uID");
                 String message = document.getString("msg");
 
+                // checks if current user did send the message
                 boolean sentByCurrentUser = senderID == userID;
 
                 String senderName;
 
+                // assigns name to sender of message
                 if (sentByCurrentUser) {
                     senderName = "You";
                 } else {
                     senderName = "User" + senderID;
                 }
 
+                // displays message that was stored
                 addMessageToScreen(senderName, message, sentByCurrentUser);
             }
 
+            // moves scrollbar to bottom as newer messages come in
             SwingUtilities.invokeLater(() -> {
                 JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
                 scrollBar.setValue(scrollBar.getMaximum());
             });
     }
 
+    //creates and display a message box
     private void addMessageToScreen(String sender, String message, boolean sentByCurrentUser) {
         int minimumWidth = 200;
         int minimumHeight = 50;
         int maximumWidth = 400;
 
+        // displays name of sender before message contents
         String fullMessage = sender + ": " + message;
 
+        // allows long messages to become multiple lines
         JTextArea messageBox = new JTextArea(fullMessage);
-
         messageBox.setEditable(false);
         messageBox.setLineWrap(true);
         messageBox.setWrapStyleWord(true);
         messageBox.setForeground(Color.WHITE);
 
+        // assigns blue to messages you send, green to anyone not you
         if (sentByCurrentUser) {
             messageBox.setBackground(new Color(3, 162, 233));
         } else {
             messageBox.setBackground(new Color(20, 186, 23));
         }
 
+        //adds space between text and box
         messageBox.setMargin(new Insets(8, 10, 8, 10));
 
+        // measures the pixel width of text and makes sure the width of message is within limits
         FontMetrics fontMetrics = messageBox.getFontMetrics(messageBox.getFont());
-
         int textWidth = fontMetrics.stringWidth(fullMessage) + 20;
         int messageWidth = Math.max(minimumWidth, Math.min(maximumWidth, textWidth));
 
+        // calculates height for message box
         messageBox.setSize(messageWidth, Short.MAX_VALUE);
 
+        //stores how much space message box needs
         Dimension preferredSize = messageBox.getPreferredSize();
-
         int messageHeight = Math.max(minimumHeight, preferredSize.height);
+        
+        // for calculating position of mbox
         int panelWidth = 400;
         int margin = 25;
         int messageX;
 
+        // messages sent show on right, received on left
         if (sentByCurrentUser) {
             messageX = panelWidth - margin - messageWidth;
         } else {
             messageX= margin;
         }
 
+        // sets positions and size of mbox, adds it to screen
         messageBox.setBounds(messageX, nextMessageY, messageWidth, messageHeight);
         messagePanel.add(messageBox);
 
+        //mpoves next message lower
         nextMessageY += messageHeight + 5;
 
+        //increases height to be scrolled
         messagePanel.setPreferredSize(new Dimension(480, Math.max(350, nextMessageY + 20)));
 
+        // recalculates panel and re-displays
         messagePanel.revalidate();
         messagePanel.repaint();
     }
 
+    // hm
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             ParakeetUI window = new ParakeetUI();
             window.setVisible(true);
-            // Start and display your window here
         });
     }
 }
