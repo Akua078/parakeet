@@ -165,7 +165,7 @@ public class ParakeetUI extends JFrame {
         int messageHeight = Math.max(minimumHeight, preferredSize.height);
         
         // for calculating position of mbox
-        int panelWidth = 400;
+        int panelWidth = 475;
         int margin = 25;
         int messageX;
 
@@ -189,13 +189,5 @@ public class ParakeetUI extends JFrame {
         // recalculates panel and re-displays
         messagePanel.revalidate();
         messagePanel.repaint();
-    }
-
-    // hm
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            ParakeetUI window = new ParakeetUI();
-            window.setVisible(true);
-        });
     }
 }
