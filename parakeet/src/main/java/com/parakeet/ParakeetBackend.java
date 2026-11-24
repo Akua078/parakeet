@@ -3,10 +3,11 @@ package com.parakeet;
 
 //Imports
 import static com.mongodb.client.model.Filters.eq;
-import org.bson.Document;
-import java.util.Set;
-import java.util.Arrays;
+
 import java.util.HashSet;
+import java.util.Set;
+
+import org.bson.Document;
 
 //Mongo Imports
 import com.mongodb.BasicDBObject;
@@ -124,7 +125,7 @@ public class ParakeetBackend {
         //Find a user and return it, if it exists. Returns null otherwise
         public Document findUser(String username){
 
-            //Setup an object to serve as our search criteria (In this case, uID and mID)
+            //Setup an object to serve as our search criteria (In this case, username)
             BasicDBObject criteria = new BasicDBObject();
             criteria.append("username",username);
 
@@ -211,6 +212,12 @@ public class ParakeetBackend {
             return doc!=null;
         }
 
+        public boolean deleteUser(String username){
+            Document doc = findUser(username);
+            if(doc!=null){this.getUsersDB().deleteOne(doc);}
+            return doc!=null;
+        }
+
         //Creates a new user and assigns default authorization
         //Users must upgrade authorization using other functions
         public boolean createUser(String username, String password){
@@ -253,6 +260,11 @@ public class ParakeetBackend {
             return false; //Username or uID is taken, so we will not make a new user
         }
 
+        //Pull a chatroom from the database and return it as a chatroom object
+        public Chatroom fetchChatroom(int roomID){
+            return null;
+        }
+
     }
 
 
@@ -283,9 +295,11 @@ public class ParakeetBackend {
                 while(newID < Integer.MAX_VALUE/2){
                     if(!s.chatroomExists(newID)){
                         s.getChatroomsDB().insertOne(
-                            new Document("auth","standard")
-                            .append("uID", newID)
+                            new Document("roomID",newID)
+                            .append("messageList", null)
+                            .append("userList", null)
                         );
+                        return true;
                     }
                     else{newID++;}
                 }
@@ -414,7 +428,12 @@ public class ParakeetBackend {
         //System.out.println("User 5: " + s.getMaxMID(5) + " Total Messages");
         //System.out.println("User 69: " + s.getMaxMID(69) + " Total Messages");
 
-        //Testing creating a chatroom
+        //Testing creating a user
+        //s.createUser("newGuy", "Pass");
+
+        System.out.println(s.findUser(100));
+        //System.out.println(s.deleteUser("newGuy"));
+        
 
 
 
