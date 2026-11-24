@@ -92,6 +92,10 @@ public class ParakeetBackend {
             Document doc = this.getUsersDB().find(eq("username", username)).first();
             return doc!=null;
         }
+        public boolean chatroomExists(int id){
+            Document doc = this.getChatroomsDB().find(eq("roomID", id)).first();
+            return doc!=null;
+        }
 
         //Find a message and return it, if it exists. Returns null otherwise
         public Document findMessage(int uID, int mID){
@@ -267,10 +271,25 @@ public class ParakeetBackend {
         int userCount;                                       //Number of users currently in the room
 
         //Public constructor
-        public Chatroom(Session s, int[] givenUserList){
+        private Chatroom(Session s, int[] givenUserList){
            for(int id : givenUserList){
             this.addUser(s,id);
            }
+        }
+
+        //NEEDS WORK DO NOT USE
+        public boolean newChatroom(Session s, int[] givenUserList){
+            int newID = 100;
+                while(newID < Integer.MAX_VALUE/2){
+                    if(!s.chatroomExists(newID)){
+                        s.getChatroomsDB().insertOne(
+                            new Document("auth","standard")
+                            .append("uID", newID)
+                        );
+                    }
+                    else{newID++;}
+                }
+                return false;
         }
 
         //Add a user to the chatroom
@@ -391,9 +410,11 @@ public class ParakeetBackend {
         //s.deleteMessage(78, 7);
  
         //Testing finding a document with the max mID
-        System.out.println("User 78: " + s.getMaxMID(78) + " Total Messages");
-        System.out.println("User 5: " + s.getMaxMID(5) + " Total Messages");
-        System.out.println("User 69: " + s.getMaxMID(69) + " Total Messages");
+        //System.out.println("User 78: " + s.getMaxMID(78) + " Total Messages");
+        //System.out.println("User 5: " + s.getMaxMID(5) + " Total Messages");
+        //System.out.println("User 69: " + s.getMaxMID(69) + " Total Messages");
+
+        //Testing creating a chatroom
 
 
 
