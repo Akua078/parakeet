@@ -4,6 +4,9 @@ package com.parakeet;
 //Imports
 import static com.mongodb.client.model.Filters.eq;
 import org.bson.Document;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.HashSet;
 
 //Mongo Imports
 import com.mongodb.BasicDBObject;
@@ -166,7 +169,7 @@ public class ParakeetBackend {
         //Add a message to the database
         public boolean sendMessage(int uID, String msg){
             //If a user with the given uID exists
-            if(this.userExists(uID)){
+            if(this.userExists(uID) && msg.length() > 0){
 
                 int newMsgID = getMaxMID(uID)+1;
 
@@ -258,12 +261,31 @@ public class ParakeetBackend {
     //Chatroom class to facilitate processing tier logic
     public class Chatroom{
 
-        int roomID;             //key
-        int[] userList;         //Stores recipients of these messages
-        int[][] messageList;    //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
+        int roomID;                                         //key
+        Set<Integer> userList = new HashSet<>();            //Stores recipients of these messages
+        int[][] messageList;                                //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
+        int userCount;                                       //Number of users currently in the room
 
-        private Chatroom(){
-            
+        //Public constructor
+        public Chatroom(Session s, int[] givenUserList){
+           for(int id : givenUserList){
+            this.addUser(s,id);
+           }
+        }
+
+        //Add a user to the chatroom
+        public boolean addUser(Session s, int id){
+            if(s.userExists(id)){
+                this.userList.add(id);
+                this.userCount++;
+                return true;
+            }
+            return false;
+        }
+
+        //Remove a user from the chatroom
+        public boolean removeUser(int id){
+            return this.userList.remove(id);
         }
 
 
