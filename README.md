@@ -9,11 +9,12 @@ The app will be written in Java, via VSCode.
 Required features to be added:
 - file sending
 - create accounts
-- multi-user messaging
+- messaging between two users
+- chatrooms
 
 Misc features to be added:
 - sound played when receiving/sending messages
-- multiple chatrooms
+- messaging between more than two users
 - customize color of message boxes
 - customize color of font
 - customize font
