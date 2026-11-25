@@ -78,11 +78,11 @@ public class ParakeetBackend {
             return instance;
         }
 
-        //Check the collection to see if a message with the given ID exists
-        public boolean messageIdExists(int uID, int mID){
-            Document doc = findMessage(uID, mID);
-            return doc!=null;
-        }
+        /*
+        
+        Session : User related functions    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   
+
+        */
 
         //Check the collection to see if a user with the given ID exists
         //(Overloaded to check with either uID or Username)
@@ -93,22 +93,6 @@ public class ParakeetBackend {
         public boolean userExists(String username){
             Document doc = this.getUsersDB().find(eq("username", username)).first();
             return doc!=null;
-        }
-        public boolean chatroomExists(int id){
-            Document doc = this.getChatroomsDB().find(eq("roomID", id)).first();
-            return doc!=null;
-        }
-
-        //Find a message and return it, if it exists. Returns null otherwise
-        public Document findMessage(int uID, int mID){
-
-            //Setup an object to serve as our search criteria (In this case, uID and mID)
-            BasicDBObject criteria = new BasicDBObject();
-            criteria.append("mID",mID);
-            criteria.append("uID",uID);
-
-            //Return the result (null if none is found)
-            return this.getMessagesDB().find(criteria).first();
         }
 
         //Find a user and return it, if it exists. Returns null otherwise
@@ -134,26 +118,6 @@ public class ParakeetBackend {
             return this.getUsersDB().find(criteria).first();
         }
 
-        //Fetch a message from the messages database with the given uID and mIDs. 
-        public String getMessage(int uID, int mID){
-            
-            //Setup default output (if no message is found for the criteria, this is returned)
-            String outString = "No Message Found for ID:[uID,mID]: " + uID + " " + mID;
-
-            //Fetch the message from the database, if it exists. 
-            //If the message does not exist, doc will be null
-            Document doc = findMessage(uID, mID);
-
-            //If we found the message, extract the 'msg' component and assign outString to that
-            if(doc!=null){
-                outString = doc.toString();
-                outString = outString.substring(outString.indexOf("msg=")+4,outString.indexOf(", uID="));
-            }
-
-            //Return outString
-            return outString;
-        }
-
         //Returns the mID of the latest message sent by a given user
         //(finds the greatest mID for a given user; utilized in sending a new message to ensure a unique ID)
         public int getMaxMID(int uID){
@@ -170,33 +134,6 @@ public class ParakeetBackend {
             }
             else{return -1;};
             return max;
-        }
-
-        //Add a message to the database
-        public boolean sendMessage(int uID, String msg){
-            //If a user with the given uID exists
-            if(this.userExists(uID) && msg.length() > 0){
-
-                int newMsgID = getMaxMID(uID)+1;
-
-                //Set up a message object with the given uID and message
-                Document message = new Document("mID",newMsgID).append("msg",msg).append("uID",uID);
-
-                //Insert the message to the messages DB and indicate success 
-                this.getMessagesDB().insertOne(message);
-                return true;
-            }
-            return false;
-        }
-
-        //Delete a message with a given mID and uID
-        //NOTE: using this function does not alter the mIDs of the other messages sent by the given user, 
-        //  and this is intentional, as it would corrupt the data of chatrooms.
-        //mIDs are used for reference only and not for counting messages, thats what getUserMsgCount() is for. 
-        public boolean deleteMessage(int uID, int mID){
-            Document doc = findMessage(uID, mID);
-            if(doc!=null){this.getMessagesDB().deleteOne(doc);}
-            return doc!=null;
         }
 
         //Manually Check the number of messages a user has sent, given that user's id
@@ -262,6 +199,89 @@ public class ParakeetBackend {
             return false; //Username or uID is taken, so we will not make a new user
         }
 
+        /*
+        
+        Session : Message related functions    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   
+
+        */
+
+        //Check the collection to see if a message with the given ID exists
+        public boolean messageIdExists(int uID, int mID){
+            Document doc = findMessage(uID, mID);
+            return doc!=null;
+        }
+
+        //Find a message and return it, if it exists. Returns null otherwise
+        public Document findMessage(int uID, int mID){
+
+            //Setup an object to serve as our search criteria (In this case, uID and mID)
+            BasicDBObject criteria = new BasicDBObject();
+            criteria.append("mID",mID);
+            criteria.append("uID",uID);
+
+            //Return the result (null if none is found)
+            return this.getMessagesDB().find(criteria).first();
+        }
+
+        //Fetch a message from the messages database with the given uID and mIDs. 
+        public String getMessage(int uID, int mID){
+            
+            //Setup default output (if no message is found for the criteria, this is returned)
+            String outString = "No Message Found for ID:[uID,mID]: " + uID + " " + mID;
+
+            //Fetch the message from the database, if it exists. 
+            //If the message does not exist, doc will be null
+            Document doc = findMessage(uID, mID);
+
+            //If we found the message, extract the 'msg' component and assign outString to that
+            if(doc!=null){
+                outString = doc.toString();
+                outString = outString.substring(outString.indexOf("msg=")+4,outString.indexOf(", uID="));
+            }
+
+            //Return outString
+            return outString;
+        }
+
+        //Add a message to the database
+        public boolean sendMessage(int uID, String msg){
+            //If a user with the given uID exists
+            if(this.userExists(uID) && msg.length() > 0){
+
+                int newMsgID = getMaxMID(uID)+1;
+
+                //Set up a message object with the given uID and message
+                Document message = new Document("mID",newMsgID).append("msg",msg).append("uID",uID);
+
+                //Insert the message to the messages DB and indicate success 
+                this.getMessagesDB().insertOne(message);
+                return true;
+            }
+            return false;
+        }
+
+        //Delete a message with a given mID and uID
+        //NOTE: using this function does not alter the mIDs of the other messages sent by the given user, 
+        //This is intentional, as it would corrupt the data of chatrooms.
+        //mIDs are used for reference only and not for counting messages, thats what getUserMsgCount() is for. 
+        public boolean deleteMessage(int uID, int mID){
+            Document doc = findMessage(uID, mID);
+            if(doc!=null){this.getMessagesDB().deleteOne(doc);}
+            return doc!=null;
+        }
+
+        /*
+        
+        Session : Chatroom related functions    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   
+
+        */
+
+        //Check to see if a chatroom exists
+        public boolean chatroomExists(int id){
+            Document doc = this.getChatroomsDB().find(eq("roomID", id)).first();
+            return doc!=null;
+        }
+
         //Pull a chatroom from the database and return it as a chatroom object
         public Chatroom fetchChatroom(int roomID){
             return null;
@@ -293,7 +313,7 @@ public class ParakeetBackend {
 
         }
 
-    }
+    } //End Session class desc
 
 
     /* 
@@ -306,18 +326,19 @@ public class ParakeetBackend {
     public class Chatroom{
 
         //Chatroom attributes
-        int roomID;                                         //key
-        Set<Integer> userList = new HashSet<>();            //Stores recipients of these messages
-        int[][] messageList;                                //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
-        int userCount;                                       //Number of users currently in the room
+        int roomID;              //key
+        Set<Integer> userList;   //Stores recipients of these messages
+        int[][] messageList;     //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
+        int userCount;           //Number of users currently in the room
 
         //Public constructor
         public Chatroom(int id){
             this.roomID = id;
             Set<Integer> userList = new HashSet<>(); 
-        }
+            this.messageList=null;
+            this.userCount=0;
 
-        //(Construction Function)
+        }
 
         //CHATROOM USER MANAGEMENT - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -340,7 +361,7 @@ public class ParakeetBackend {
 
         //Fetch chat messages (refresh)
         //Returns true if anything changed, false otherwise
-        public boolean refreshMessages(Session s){
+        public boolean fetchMessages(Session s){
 
             //Set up boolean flag to flip if anything changes
             boolean changed = false;
@@ -418,6 +439,24 @@ public class ParakeetBackend {
                     break;
                 default:
                     this.auth = "anon";
+                    break;
+                 
+            }
+            return false;
+        }
+
+        //Demotes the user by one auth level, but not from developer 
+        public boolean demote(){
+            switch (this.getAuth()){
+                case "admin": 
+                    this.auth = "standard";
+                    break;
+                case "standard":
+                    this.auth = "anon";
+                    break;
+                default:
+                    this.auth = "anon";
+                    break;
                  
             }
             return false;
