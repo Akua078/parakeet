@@ -119,7 +119,7 @@ public class ParakeetBackend {
             criteria.append("uID",uID);
 
             //Return the result (null if none is found)
-            return this.getMessagesDB().find(criteria).first();
+            return this.getUsersDB().find(criteria).first();
         }
 
         //Find a user and return it, if it exists. Returns null otherwise
@@ -130,7 +130,7 @@ public class ParakeetBackend {
             criteria.append("username",username);
 
             //Return the result (null if none is found)
-            return this.getMessagesDB().find(criteria).first();
+            return this.getUsersDB().find(criteria).first();
         }
 
         //Fetch a message from the messages database with the given uID and mIDs. 
@@ -234,8 +234,9 @@ public class ParakeetBackend {
                             .append("password", password)
                             .append("username", username)
                         );
+                        return true; //New user is created, no issues
                     }
-                    else{newUID++;}
+                    else{newUID++;} //Username or uID is taken, so we will not make a new user
                 }
 
                 //Create a new user document and send it into the user database
@@ -429,10 +430,12 @@ public class ParakeetBackend {
         //System.out.println("User 69: " + s.getMaxMID(69) + " Total Messages");
 
         //Testing creating a user
-        //s.createUser("newGuy", "Pass");
+        s.createUser("newGuy", "Pass");
 
-        System.out.println(s.findUser(100));
-        //System.out.println(s.deleteUser("newGuy"));
+        /* 
+        while(s.userExists("newGuy")){
+            s.deleteUser("newGuy");
+        }*/
         
 
 
