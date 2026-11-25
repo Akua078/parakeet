@@ -6,6 +6,7 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.bson.Document;
 
@@ -266,6 +267,32 @@ public class ParakeetBackend {
             return null;
         }
 
+        //Creates a new chatroom object to be uploaded to the DB
+        public void createChatroom(Set<Integer> givenUserList){
+
+            //Remove users who do not exist
+            for(int id : givenUserList){
+                if(!this.userExists(id)){
+                    givenUserList.remove(id);
+                }
+            }
+
+            //Setup roomID and push new chatroom into database
+            int newID = 100;
+            while(newID < Integer.MAX_VALUE/2){
+                if(!this.chatroomExists(newID)){
+                    this.getChatroomsDB().insertOne(
+                        new Document("roomID",newID)
+                        .append("messageList", null)
+                        .append("userList", Arrays.asList(givenUserList.toArray()))
+                    );
+                    break;
+                }
+                else{newID++;}
+            }
+
+        }
+
     }
 
 
@@ -278,34 +305,21 @@ public class ParakeetBackend {
     //Chatroom class to facilitate processing tier logic
     public class Chatroom{
 
+        //Chatroom attributes
         int roomID;                                         //key
         Set<Integer> userList = new HashSet<>();            //Stores recipients of these messages
         int[][] messageList;                                //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
         int userCount;                                       //Number of users currently in the room
 
         //Public constructor
-        private Chatroom(Session s, int[] givenUserList){
-           for(int id : givenUserList){
-            this.addUser(s,id);
-           }
+        public Chatroom(int id){
+            this.roomID = id;
+            Set<Integer> userList = new HashSet<>(); 
         }
 
-        //NEEDS WORK DO NOT USE
-        public boolean newChatroom(Session s, int[] givenUserList){
-            int newID = 100;
-                while(newID < Integer.MAX_VALUE/2){
-                    if(!s.chatroomExists(newID)){
-                        s.getChatroomsDB().insertOne(
-                            new Document("roomID",newID)
-                            .append("messageList", null)
-                            .append("userList", null)
-                        );
-                        return true;
-                    }
-                    else{newID++;}
-                }
-                return false;
-        }
+        //(Construction Function)
+
+        //CHATROOM USER MANAGEMENT - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         //Add a user to the chatroom
         public boolean addUser(Session s, int id){
@@ -320,6 +334,24 @@ public class ParakeetBackend {
         //Remove a user from the chatroom
         public boolean removeUser(int id){
             return this.userList.remove(id);
+        }
+
+        //CHATROOM MESSAGE DISPLAY AND REFRESH - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        //Fetch chat messages (refresh)
+        //Returns true if anything changed, false otherwise
+        public boolean refreshMessages(Session s){
+
+            //Set up boolean flag to flip if anything changes
+            boolean changed = false;
+
+            //Check for changes
+            for(int[] msg : this.messageList){
+                
+            }
+
+            //Return flag
+            return changed;
         }
 
 
@@ -430,12 +462,15 @@ public class ParakeetBackend {
         //System.out.println("User 69: " + s.getMaxMID(69) + " Total Messages");
 
         //Testing creating a user
-        s.createUser("newGuy", "Pass");
+        //s.createUser("newGuy", "Pass");
 
-        /* 
-        while(s.userExists("newGuy")){
-            s.deleteUser("newGuy");
-        }*/
+        //Testing creating a new chatroom
+        //Set<Integer> users = new HashSet<>();
+        //users.add(78);
+        //users.add(5);
+        //System.out.print(users);
+        //s.createChatroom(users);
+        
         
 
 
