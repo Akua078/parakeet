@@ -7,6 +7,9 @@ import static com.mongodb.client.model.Filters.eq;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.bson.Document;
 
@@ -284,10 +287,12 @@ public class ParakeetBackend {
 
         //Pull a chatroom from the database and return it as a chatroom object
         public Chatroom fetchChatroom(int roomID){
-            return null;
+            Chatroom cR = new Chatroom(this,roomID);
+            return cR;
         }
 
         //Creates a new chatroom object to be uploaded to the DB
+        //(Does not create a chatroom object)
         public void createChatroom(Set<Integer> givenUserList){
 
             //Remove users who do not exist
@@ -323,21 +328,55 @@ public class ParakeetBackend {
     */
 
     //Chatroom class to facilitate processing tier logic
-    public class Chatroom{
+    public static class Chatroom{
 
         //Chatroom attributes
         int roomID;              //key
         Set<Integer> userList;   //Stores recipients of these messages
-        int[][] messageList;     //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
+        List<String> messageList;    //Stores the mIDs of the messages and the uIDs of the senders [uID, mID]
         int userCount;           //Number of users currently in the room
 
         //Public constructor
-        public Chatroom(int id){
-            this.roomID = id;
-            Set<Integer> userList = new HashSet<>(); 
-            this.messageList=null;
-            this.userCount=0;
+        public Chatroom(Session s, int id){
 
+            //Room ID is given
+            this.roomID = id;
+            this.userList = new HashSet<>();
+            this.messageList = new ArrayList<>();
+
+            //Setup chatroom document
+            Document doc = s.getChatroomsDB().find(eq("roomID",roomID)).first();
+
+            if(doc!=null){
+
+                //Populate User List and update count
+                List<Integer> tempUserList = doc.getList("userList", Integer.class);
+                for(int n : tempUserList){
+                    this.userList.add(n);
+                }
+
+                //Populate Message List
+                List<String> tempMessageList = doc.getList("messageList", String.class);
+                for(String m : tempMessageList){
+                    this.messageList.add(m);
+                }
+
+            }
+            
+            
+
+
+
+        }
+
+        //Primative display function for testing
+        public void displayInTerminal(){
+            System.out.println("Room ID: " + roomID);
+            System.out.println("Users: " + userCount);
+            if(messageList!=null){System.out.println("MsgList: " + messageList);}
+            else{System.out.println("[Message list is null!]");}
+            if(userList!=null){System.out.println("UsrList: " + userList.toString());}
+            else{System.out.println("[User list is null!]");}
         }
 
         //CHATROOM USER MANAGEMENT - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -346,7 +385,7 @@ public class ParakeetBackend {
         public boolean addUser(Session s, int id){
             if(s.userExists(id)){
                 this.userList.add(id);
-                this.userCount++;
+                this.userCount = this.userList.size();
                 return true;
             }
             return false;
@@ -366,10 +405,8 @@ public class ParakeetBackend {
             //Set up boolean flag to flip if anything changes
             boolean changed = false;
 
-            //Check for changes
-            for(int[] msg : this.messageList){
-                
-            }
+            //Check for changes (TO DO)
+
 
             //Return flag
             return changed;
@@ -509,6 +546,10 @@ public class ParakeetBackend {
         //users.add(5);
         //System.out.print(users);
         //s.createChatroom(users);
+
+        //Testing fetching a chatroom
+        s.fetchChatroom(100).displayInTerminal();
+        
         
         
 
